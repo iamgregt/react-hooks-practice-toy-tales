@@ -20,7 +20,6 @@ function App() {
   
   function handleNewToy(newToy){
     console.log(newToy)
-    const updatedToys = [...toys, newToy]
     
     fetch('http://localhost:3001/toys', {
       method: "POST",
@@ -30,7 +29,37 @@ function App() {
       body: JSON.stringify(newToy)
     })
     .then(r => r.json())
+    .then((toyR) => {
+      setToys([...toys, toyR])
+    })
+  }
+
+  function handleDeletedToy(deletedToyId){
+    const updatedToys = toys.filter((toy) => {
+      return toy.id !== deletedToyId
+    })
+
+    fetch(`http://localhost:3001/toys/${deletedToyId}`, {
+      method: "DELETE"
+    })
+    .then(r => r.json())
     .then(() => setToys(updatedToys))
+  }
+
+  function handleNewLike(newToy){
+    console.log(newToy)
+    fetch(`http://localhost:3001/toys/${newToy.id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        "likes": ++newToy.likes
+      })
+    }
+    )
+      .then(r => r.json())
+      .then(r => setToys([...toys, r]))
   }
 
   return (
@@ -40,7 +69,7 @@ function App() {
       <div className="buttonContainer">
         <button onClick={handleClick}>Add a Toy</button>
       </div>
-      <ToyContainer toys={toys} />
+      <ToyContainer toys={toys} onDelete={handleDeletedToy} onLike={handleNewLike} />
     </>
   );
 }
